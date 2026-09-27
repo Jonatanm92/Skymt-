@@ -79,7 +79,7 @@ export class PlayerController {
     this.body.vx = 0;
     this.body.vy = 0;
     this.setState(state);
-    this.humming = false;
+    this.stopHumming();
     this.humCharge = 0;
     this.humTime = 0;
     this.humLatch = false;
@@ -89,6 +89,14 @@ export class PlayerController {
   setState(s: PlayerState) {
     this.state = s;
     this.stateTime = 0;
+    if (s === 'locked' || s === 'lying') this.stopHumming();
+  }
+
+  /** Silently end a hum without releasing a pulse (respawn, cutscenes). */
+  stopHumming() {
+    if (this.humming) this.events.emit('hum:stop', undefined);
+    this.humming = false;
+    this.humCharge = 0;
   }
 
   /** Face `dir` and keep moving that way (used by scripted moments). */
@@ -219,8 +227,7 @@ export class PlayerController {
     this.mantleTo = { x: l.standX, y: l.top + 1e-4 };
     this.body.vx = 0;
     this.body.vy = 0;
-    this.humming = false;
-    this.humCharge = 0;
+    this.stopHumming();
     this.setState('mantle');
     this.events.emit('mantle', { x: this.body.x });
   }

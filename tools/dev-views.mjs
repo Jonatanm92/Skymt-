@@ -20,6 +20,7 @@ await page.goto('http://localhost:4181/?test');
 await page.waitForFunction(() => window.__skymt);
 const views = [
   ['x-tunnel', 43.8, 3.5, []], ['y-wellin', 117, 30, ['memory.seen', 'gate.open', 'well.lid']],
+  ['r-roots', 101.5, 1, ['memory.seen', 'root.R1']],
   ['a-start', 1, 0, []], ['b-climb', 36.5, 1.2, []], ['c-hall', 53, 0, []], ['d-chasm', 69, 1, []],
   ['e-alcove', 86, 1, []], ['f-shaft', 102, 1, ['memory.seen']], ['g-L4', 112, 12, ['memory.seen', 'root.R1']],
   ['h-gate', 114, 16, ['memory.seen', 'root.R1', 'root.R2']], ['i-well', 120, 30, ['memory.seen', 'gate.open', 'well.lid']],

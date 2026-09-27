@@ -239,6 +239,7 @@ export class Game {
     this.ui.closeAll();
     this.input.flush();
     this.audio.duck(1, 0.4);
+    if (this.player.humming) this.audio.startHum();
     this.mode = 'playing';
     document.body.classList.add('cursor-hidden');
   }
