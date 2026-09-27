@@ -384,7 +384,7 @@ export class Game {
         }
       } else {
         // Title / pause: world keeps breathing, nothing advances.
-        for (const ent of this.stones) ent.update(0, now / 1000);
+        for (const ent of this.entities) ent.update(0, now / 1000);
       }
       this.visuals(dt, now / 1000);
       this.renderer.render(now / 1000);

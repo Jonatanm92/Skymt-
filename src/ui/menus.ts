@@ -90,6 +90,7 @@ export function buildMenus(g: Game) {
       { kind: 'button', label: () => t('menu.quit'), act: () => g.enterTitle() },
     ] as Item[],
     onBack: () => g.resume(),
+    note: () => (g.input.lastDevice === 'gamepad' ? '' : t('menu.hintKeys')),
   };
 
   return { title, pause, settings, confirm };

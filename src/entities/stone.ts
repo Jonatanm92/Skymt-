@@ -67,11 +67,11 @@ export class LightBridge implements Entity {
       const mat = m.material as THREE.MeshStandardMaterial;
       const shimmer = 0.9 + Math.sin(time * 2 + i) * 0.1;
       // Dormant slabs are a faint suspended haze: readable, but clearly not solid.
-      mat.opacity = 0.05 + 0.03 * Math.sin(time * 1.7 + i * 1.3) + this.solidity * (this.warn ? 0.4 + 0.4 * this.flicker : 0.85) * shimmer;
+      mat.opacity = 0.025 + 0.02 * Math.sin(time * 1.7 + i * 1.3) + this.solidity * (this.warn ? 0.4 + 0.4 * this.flicker : 0.85) * shimmer;
       mat.emissiveIntensity = 0.35 + this.solidity * 0.8 * this.flicker;
       m.position.y = this.def.slabs[i].y + this.def.slabs[i].h / 2 + (1 - this.solidity) * -0.08 + Math.sin(time * 1.3 + i * 2) * 0.012;
       const g = this.ghosts[i].material as THREE.SpriteMaterial;
-      g.opacity = 0.12 + 0.06 * Math.sin(time * 1.1 + i) + this.solidity * 0.35;
+      g.opacity = 0.07 + 0.04 * Math.sin(time * 1.1 + i) + this.solidity * 0.35;
       this.ghosts[i].position.y = m.position.y;
     });
   }
