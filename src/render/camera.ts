@@ -36,6 +36,7 @@ export class CameraRig {
   snap(p: PlayerController, zone: ZoneDef | null) {
     this.anchorY = p.y;
     this.lookAhead = 0;
+    this.overrideW = this.override ? this.override.weight : 0;
     const tgt = this.target(p, zone);
     this.x = tgt.x;
     this.y = tgt.y;

@@ -132,7 +132,7 @@ export const slice: LevelDef = {
     },
     {
       id: 'well', area: r(111.2, 29.5, 30, 60), ambience: 'well', music: 'well',
-      fog: { color: 0x2b333d, density: 0.009 }, exposure: 1.2,
+      fog: { color: 0x1d242c, density: 0.0065 }, exposure: 1.2,
       camera: { distance: 18, offsetY: 2.6, lookUp: 0.06 },
     },
   ],

@@ -85,7 +85,7 @@ export async function endingSequence(g: Game) {
   g.sequence = 'ending';
   g.musicOverride = 'none';
   g.audio.duck(0.7, 3);
-  g.rig.override = { x: 129, y: 36, distance: 27, lookUp: 0.25, weight: 1 };
+  g.rig.override = { x: 129.5, y: 31.2, distance: 21, lookUp: 0.14, weight: 1 };
   g.scriptMove = 0.45;
   await Promise.race([g.scheduler.waitUntil(() => p.x >= g.level.ending.stopX - 1.2), g.scheduler.wait(4)]);
   g.scriptMove = null;
@@ -112,7 +112,7 @@ export async function endingSequence(g: Game) {
   g.audio.duck(1, 0.5);
   const dur = g.audio.melody(ANSWER_PHRASE, 'distant', 0.2);
   g.say('cap.answer', dur + 1.5, 'caption');
-  g.rig.override = { x: 128, y: 58, distance: 42, lookUp: 0.55, weight: 1 };
+  g.rig.override = { x: 127, y: 36, distance: 16, lookUp: 2.4, weight: 1 };
   await g.scheduler.wait(dur * 0.5);
   g.model.flare(1.6);
   void g.animate(2.5, (k) => (g.model.warmth = 0.5 + 0.5 * k));

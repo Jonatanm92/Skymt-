@@ -66,6 +66,8 @@ export class Game {
   musicOverride: import('./content/types').MusicState | null = null;
   autopilot: Autopilot | null = null;
   stepsPerFrame = 0; // 0 = real time; >0 = fixed count (tests)
+  /** QA: hold the simulation (still rendering) until released. */
+  frozen = false;
   simTime = 0;
   private acc = 0;
   private last = 0;
@@ -249,6 +251,8 @@ export class Game {
     this.sequence = null;
     this.endingStarted = false;
     this.memory.running = false;
+    this.memory.apparition.hide();
+    this.ui.clearSubs();
     this.rig.override = null;
     this.musicOverride = null;
     this.model.lookUp = 0;
@@ -364,7 +368,7 @@ export class Game {
         this.ui.update();
         if (this.mode === 'paused' && this.input.pressed('pause') && this.ui.currentMenu === 'pause') this.resume();
       }
-      const simulate = this.mode === 'playing' || this.mode === 'ending';
+      const simulate = (this.mode === 'playing' || this.mode === 'ending') && !this.frozen;
       if (simulate) {
         if (this.stepsPerFrame > 0) {
           for (let i = 0; i < this.stepsPerFrame; i++) this.fixed(STEP);

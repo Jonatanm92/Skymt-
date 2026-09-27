@@ -107,7 +107,7 @@ export class Gate implements Entity {
 
     // Warm light that falls through once the seal is open.
     this.shaft = new THREE.Mesh(
-      new THREE.PlaneGeometry(5.5, 26),
+      new THREE.PlaneGeometry(4, 26),
       new THREE.MeshBasicMaterial({ map: shaftTexture(), color: WARM, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }),
     );
     this.shaft.position.set(def.x, def.plug.y + 13 - 16, -1.2);
@@ -192,7 +192,7 @@ export class Gate implements Entity {
       this.halves.forEach((h, i) => (h.position.x = this.def.x + (i === 0 ? -0.001 : 0.001) + shiver));
     }
     const light = this.isOpen ? Math.min(1, this.openT >= 99 ? 1 : THREE.MathUtils.smoothstep(this.openT, 1.5, 6)) : 0;
-    (this.shaft.material as THREE.MeshBasicMaterial).opacity = light * (0.32 + Math.sin(time * 0.7) * 0.04);
+    (this.shaft.material as THREE.MeshBasicMaterial).opacity = light * (0.16 + Math.sin(time * 0.7) * 0.03);
     this.shaftLight.intensity = light * 60;
   }
 }

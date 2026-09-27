@@ -53,18 +53,37 @@ export class MelodyRoot implements Entity {
     for (const [si, r] of def.steps.entries()) {
       this.solids.push(ctx.physics.add({ id: `${def.id}_${si}`, ...r, active: false, surface: 'root' }));
       const g = new THREE.Group();
-      const stems = Math.max(3, Math.round(r.w * 3));
+      const half = r.w / 2;
+      // Braided stems rising from the ground, leaning and crossing.
+      const stems = Math.max(4, Math.round(r.w * 4.5));
       for (let k = 0; k < stems; k++) {
-        const x = r.x + (k + 0.5) * (r.w / stems) - (r.x + r.w / 2);
-        const pts = [0, 0.33, 0.66, 1].map((t) =>
-          new THREE.Vector3(x + Math.sin(t * 4 + k) * 0.08, t * r.h, Math.cos(t * 3 + k * 2) * 0.35 + (R() - 0.5) * 0.3),
+        const x0 = -half + (k + 0.5) * (r.w / stems) + (R() - 0.5) * 0.25;
+        const x1 = -half * 0.85 + R() * r.w * 0.85;
+        const z0 = (R() - 0.5) * 1.3;
+        const pts = [0, 0.25, 0.5, 0.75, 1].map((t) =>
+          new THREE.Vector3(
+            x0 + (x1 - x0) * t + Math.sin(t * 5 + k) * 0.12,
+            t * (r.h - 0.08),
+            z0 * (1 - t * 0.5) + Math.sin(t * 4 + k * 1.7) * 0.2,
+          ),
         );
-        g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 12, 0.07 + R() * 0.05, 6, false), this.mat));
+        g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 14, 0.06 + R() * 0.07, 6, false), this.mat));
       }
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.16, 16), this.mat);
-      cap.scale.set(r.w * 1.02, 1, 1.5);
-      cap.position.y = r.h - 0.08;
-      g.add(cap);
+      // A woven top: roots running across, forming the surface Skymt walks on.
+      for (let k = 0; k < 6; k++) {
+        const z = -0.65 + k * 0.26 + (R() - 0.5) * 0.08;
+        const pts = [0, 0.25, 0.5, 0.75, 1].map((t) =>
+          new THREE.Vector3(-half - 0.15 + t * (r.w + 0.3), r.h - 0.1 + Math.sin(t * 7 + k * 2) * 0.05, z + Math.sin(t * 3 + k) * 0.08),
+        );
+        g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.085, 6, false), this.mat));
+      }
+      // Loose tendrils curling off the edges.
+      for (const side of [-1, 1]) {
+        const pts = [0, 0.33, 0.66, 1].map((t) =>
+          new THREE.Vector3(side * (half + t * 0.35), r.h - 0.1 - t * 0.5 + Math.sin(t * 3) * 0.15, (R() - 0.5) * 0.8),
+        );
+        g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 10, 0.035, 5, false), this.mat));
+      }
       g.position.set(r.x + r.w / 2, r.y, -0.1);
       g.scale.y = 0.001;
       g.visible = false;

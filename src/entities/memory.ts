@@ -109,6 +109,12 @@ export class Apparition {
     this.target.copy(worldTarget).sub(this.points.position);
   }
 
+  hide() {
+    this.phase = 'hidden';
+    this.points.visible = false;
+    this.mat.opacity = 0;
+  }
+
   update(dt: number) {
     if (this.phase === 'hidden') return;
     this.t += dt;

@@ -121,7 +121,7 @@ export class SkymtModel {
 
     // Hum ring (charging indicator in the world, not the HUD)
     this.ring = new THREE.Mesh(
-      new THREE.RingGeometry(0.96, 1, 64),
+      new THREE.RingGeometry(0.985, 1, 96),
       new THREE.MeshBasicMaterial({ color: COLD.clone(), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }),
     );
     this.ring.position.set(0, 0.5, 0.05);
@@ -152,8 +152,13 @@ export class SkymtModel {
 
     // Squash & stretch spring.
     const stretchTarget = p.grounded ? 0 : THREE.MathUtils.clamp(b.vy * 0.025, -0.12, 0.14);
-    this.squashV += ((stretchTarget - this.squash) * 180 - this.squashV * 14) * dt;
-    this.squash += this.squashV * dt;
+    // Sub-stepped so the spring stays stable at low frame rates.
+    for (let left = dt; left > 1e-6; left -= 1 / 120) {
+      const h = Math.min(left, 1 / 120);
+      this.squashV += ((stretchTarget - this.squash) * 180 - this.squashV * 14) * h;
+      this.squash += this.squashV * h;
+    }
+    this.squash = THREE.MathUtils.clamp(this.squash, -0.4, 0.4);
     const sy = 1 + this.squash;
     const sxz = 1 - this.squash * 0.5;
     this.pivot.scale.set(sxz, sy, sxz);
@@ -239,7 +244,7 @@ export class SkymtModel {
     if (p.humming) {
       const r = 3.2 + Math.min(1, charge) * 3.8;
       this.ring.scale.setScalar(r * (0.96 + Math.sin(this.t * 20) * 0.01));
-      ringMat.opacity = 0.1 + Math.min(1, charge) * 0.18;
+      ringMat.opacity = 0.06 + Math.min(1, charge) * 0.12;
       ringMat.color.copy(col);
     } else ringMat.opacity = Math.max(0, ringMat.opacity - dt * 1.5);
   }

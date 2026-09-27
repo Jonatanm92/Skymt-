@@ -47,7 +47,7 @@ export class Atmosphere {
 
   pulse(x: number, y: number, radius: number, warm: boolean) {
     const mesh = new THREE.Mesh(
-      new THREE.RingGeometry(0.9, 1, 96),
+      new THREE.RingGeometry(0.985, 1, 128),
       new THREE.MeshBasicMaterial({ color: warm ? 0xffc98a : 0xbfe9ff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }),
     );
     mesh.position.set(x, y, 0.2);
@@ -88,7 +88,7 @@ export class Atmosphere {
       const k = r.t / r.life;
       const e = 1 - Math.pow(1 - Math.min(1, k), 3);
       r.mesh.scale.setScalar(Math.max(0.01, e * r.r));
-      (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.45 * (1 - k);
+      (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.35 * (1 - k) * (1 - k);
       if (k >= 1) {
         this.scene.remove(r.mesh);
         r.mesh.geometry.dispose();

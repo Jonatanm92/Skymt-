@@ -55,6 +55,10 @@ export function goldenPath(): Step[] {
     { mark: 'alcove' },
     { go: 87.4 },
     { hum: 0.4 },
+    { wait: 7.5 },
+    { mark: 'memory-vision' },
+    { wait: 9 },
+    { mark: 'memory-dissolve' },
     { until: 'memorySeen', timeout: 60 },
     { mark: 'memory-done' },
     { go: 101 },
@@ -63,7 +67,9 @@ export function goldenPath(): Step[] {
     { hum: 0.9 },
     { sing: true },
     { until: 'r1', timeout: 5 },
-    { wait: 3 },
+    { wait: 1.2 },
+    { mark: 'root-growing' },
+    { wait: 1.8 },
     { mark: 'root1' },
     { go: 114.0 },
     { hum: 0.9 },
@@ -98,7 +104,9 @@ export function goldenPath(): Step[] {
     { wait: 1 },
     { sing: true },
     { until: 'gateOpen', timeout: 5 },
-    { wait: 10 },
+    { wait: 3.5 },
+    { mark: 'gate-opening' },
+    { wait: 6.5 },
     { mark: 'gate-open' },
     { go: 113.3, tol: 0.2 },
     { jump: { at: 113.0, to: 112.0 } },
@@ -111,6 +119,10 @@ export function goldenPath(): Step[] {
     { mark: 'ending' },
     { wait: 1 },
     { sing: true },
+    { wait: 8.5 },
+    { mark: 'answer' },
+    { wait: 9 },
+    { mark: 'last-line' },
     { until: 'ended', timeout: 60 },
     { mark: 'end' },
   ];
@@ -213,8 +225,9 @@ export function installTestHooks(game: Game) {
     start(fresh = true) {
       game.start(fresh);
     },
-    run(stepsPerFrame = 6) {
+    run(stepsPerFrame = 6, freezeOnMark = false) {
       runner = new RouteRunner(goldenPath());
+      if (freezeOnMark) runner.onMark = () => (game.frozen = true);
       game.autopilot = runner;
       game.stepsPerFrame = stepsPerFrame;
     },
@@ -230,11 +243,12 @@ export function installTestHooks(game: Game) {
         checkpoint: game.save.checkpoint,
         flags: Object.keys(game.flags.data).sort(),
         simTime: game.simTime,
+        frozen: game.frozen,
         errors: game.errors,
       };
     },
     /** Jump the camera/player to a spot for visual review (QA only). */
-    view(x: number, y: number, flags: string[] = []) {
+    view(x: number, y: number, flags: string[] = [], cam?: { x: number; y: number; distance: number; lookUp?: number }) {
       flags.forEach((f) => (game.flags.data[f] = true));
       game.cancelSequence();
       game.mode = 'playing';
@@ -244,8 +258,19 @@ export function installTestHooks(game: Game) {
       game.model.awake = 1;
       game.renderer.fade = 0;
       game.zone = game.findZone();
+      game.rig.override = cam ? { ...cam, weight: 1 } : null;
       game.rig.snap(game.player, game.zone);
       game.snapAtmosphere();
+      if (cam) game.frozen = true; // keep sequences (e.g. the ending) from starting
+    },
+    setCheckpoint(id: string) {
+      game.save.checkpoint = id;
+    },
+    hints() {
+      return [...document.querySelectorAll('.hint.show')].map((e) => e.textContent);
+    },
+    unfreeze() {
+      game.frozen = false;
     },
     stop() {
       game.autopilot = null;

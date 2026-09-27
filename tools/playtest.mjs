@@ -48,7 +48,7 @@ await page.screenshot({ path: `${OUT}/00-title.png` });
 // Start through the real menu (Enter on "Begin").
 await page.keyboard.press('Enter');
 await page.waitForTimeout(300);
-await page.evaluate(() => window.__skymt.run(30));
+await page.evaluate((f) => window.__skymt.run(30, f), shots);
 
 const t0 = Date.now();
 let lastMarks = 0;
@@ -58,8 +58,13 @@ while (true) {
   if (status.marks.length > lastMarks) {
     for (const m of status.marks.slice(lastMarks)) {
       console.log(`  ✓ ${m.padEnd(12)} x=${status.x.toFixed(1)} y=${status.y.toFixed(1)} t=${status.simTime.toFixed(0)}s`);
-      if (shots) await page.screenshot({ path: `${OUT}/${String(lastMarks + 1).padStart(2, '0')}-${m}.png` });
       lastMarks++;
+    }
+    if (shots && status.frozen) {
+      await page.waitForTimeout(1200);
+      const m = status.marks[status.marks.length - 1];
+      await page.screenshot({ path: `${OUT}/${String(status.marks.length).padStart(2, '0')}-${m}.png` });
+      await page.evaluate(() => window.__skymt.unfreeze());
     }
   }
   if (status.done || status.failed || Date.now() - t0 > 25 * 60 * 1000) break;
@@ -69,8 +74,11 @@ while (true) {
 let ok = status.done && !status.failed;
 console.log(ok ? 'ROUTE: completed' : `ROUTE: FAILED — ${status.failed ?? 'timeout'} (step ${status.step})`);
 console.log('flags:', status.flags.join(', '));
-await page.waitForTimeout(6000);
+const card = await page.waitForSelector('.endcard.show', { timeout: 120000 }).then(() => true, () => false);
+await page.waitForTimeout(5000);
 await page.screenshot({ path: `${OUT}/99-endcard.png` });
+console.log(`END CARD: ${card ? 'ok' : 'FAILED'}`);
+ok = ok && card;
 
 // Save / continue check: reload, continue, expect to be at the saved checkpoint.
 await page.evaluate(() => window.__skymt.stop());
@@ -87,13 +95,36 @@ ok = ok && contOk;
 
 // Pause menu opens and resumes.
 await page.keyboard.press('Escape');
-await page.waitForTimeout(400);
+await page.waitForTimeout(1500);
 const paused = await page.evaluate(() => window.__skymt.status().mode);
 await page.keyboard.press('Escape');
-await page.waitForTimeout(400);
+await page.waitForTimeout(1500);
 const resumed = await page.evaluate(() => window.__skymt.status().mode);
 console.log(`PAUSE: ${paused === 'paused' && resumed === 'playing' ? 'ok' : 'FAILED'} (${paused} -> ${resumed})`);
 ok = ok && paused === 'paused' && resumed === 'playing';
+
+// Falling into the chasm returns Skymt to the last resting place.
+await page.evaluate(() => {
+  window.__skymt.setCheckpoint('chasm');
+  window.__skymt.view(75, 3, []);
+});
+await page.waitForFunction(() => { const s = window.__skymt.status(); return s.state === 'normal' && s.y > 0.5 && s.x < 70; }, null, { timeout: 60000 }).catch(() => {});
+const fell = await page.evaluate(() => window.__skymt.status());
+const fallOk = Math.abs(fell.x - 67.4) < 0.3 && Math.abs(fell.y - 1) < 0.05;
+console.log(`FALL/RESPAWN: ${fallOk ? 'ok' : 'FAILED'} (x=${fell.x.toFixed(2)} y=${fell.y.toFixed(2)})`);
+ok = ok && fallOk;
+
+// Idle at the chasm edge without humming: the hum hint should surface.
+await page.evaluate(() => {
+  const g = window.__skymt.game;
+  delete g.flags.data['learned.hum'];
+  window.__skymt.view(68.5, 1, []);
+});
+await page.waitForFunction(() => window.__skymt.hints().length > 0, null, { timeout: 60000 }).catch(() => {});
+const hints = await page.evaluate(() => window.__skymt.hints());
+console.log(`HINT: ${hints.length ? 'ok' : 'FAILED'} (${hints.join(' | ')})`);
+await page.screenshot({ path: `${OUT}/98-hint.png` });
+ok = ok && hints.length > 0;
 
 const real = problems.filter((p) => !/GPU stall|swiftshader|WebGL|GL Driver|Automatic fallback/i.test(p));
 console.log(`console problems: ${real.length}`);

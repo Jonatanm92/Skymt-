@@ -19,13 +19,16 @@ await page.addInitScript((q) => localStorage.setItem('skymt.settings.v1', JSON.s
 await page.goto('http://localhost:4181/?test');
 await page.waitForFunction(() => window.__skymt);
 const views = [
+  ['x-tunnel', 43.8, 3.5, []], ['y-wellin', 117, 30, ['memory.seen', 'gate.open', 'well.lid']],
   ['a-start', 1, 0, []], ['b-climb', 36.5, 1.2, []], ['c-hall', 53, 0, []], ['d-chasm', 69, 1, []],
   ['e-alcove', 86, 1, []], ['f-shaft', 102, 1, ['memory.seen']], ['g-L4', 112, 12, ['memory.seen', 'root.R1']],
   ['h-gate', 114, 16, ['memory.seen', 'root.R1', 'root.R2']], ['i-well', 120, 30, ['memory.seen', 'gate.open', 'well.lid']],
+  ['j-edge', 133, 30, ['memory.seen', 'gate.open', 'well.lid'], { x: 129.5, y: 31.2, distance: 21, lookUp: 0.14 }],
+  ['k-final', 133, 30, ['memory.seen', 'gate.open', 'well.lid'], { x: 127, y: 36, distance: 16, lookUp: 2.4 }],
 ];
-for (const [name, x, y, flags] of views) {
+for (const [name, x, y, flags, cam] of views) {
   if (only && !name.startsWith(only)) continue;
-  await page.evaluate(([x, y, f]) => window.__skymt.view(x, y, f), [x, y, flags]);
+  await page.evaluate(([x, y, f, c]) => window.__skymt.view(x, y, f, c), [x, y, flags, cam]);
   await page.waitForTimeout(2500);
   await page.screenshot({ path: `${out}/${name}.png` });
   console.log('shot', name);
